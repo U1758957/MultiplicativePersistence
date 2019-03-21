@@ -12,12 +12,13 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Buffer {
 
     private final Lock lock = new ReentrantLock();
-    private final Condition stepUsage = lock.newCondition();
+    private final Condition bufferUsage = lock.newCondition();
 
     private boolean bufferInUse = false;
+    private boolean finish = false;
 
     private int largestSteps = 0;
-    private String largestNumber;
+    private long largestNumber;
 
     /**
      * Set the new largest amount of steps, and the new largest number
@@ -25,10 +26,10 @@ public class Buffer {
      * @param number the actual number that was processed
      * @throws BufferError if a thread is interrupted while waiting for usage of the buffer
      */
-    public void setNewLargest(int steps, String number) throws BufferError {
+    public void setNewLargest(int steps, long number) throws BufferError {
         lock.lock();
         try {
-            if (bufferInUse) stepUsage.await();
+            if (bufferInUse) bufferUsage.await();
             bufferInUse = true;
             this.largestSteps = steps;
             this.largestNumber = number;
@@ -36,7 +37,7 @@ public class Buffer {
             throw new BufferError(e.getMessage());
         } finally {
             bufferInUse = false;
-            stepUsage.signal();
+            bufferUsage.signal();
             lock.unlock();
         }
     }
@@ -49,14 +50,14 @@ public class Buffer {
     public int getLargestSteps() throws BufferError {
         lock.lock();
         try {
-            if (bufferInUse) stepUsage.await();
+            if (bufferInUse) bufferUsage.await();
             bufferInUse = true;
             return largestSteps;
         } catch (InterruptedException e) {
             throw new BufferError(e.getMessage());
         } finally {
             bufferInUse = false;
-            stepUsage.signal();
+            bufferUsage.signal();
             lock.unlock();
         }
     }
@@ -66,11 +67,42 @@ public class Buffer {
      * this, and only when all other threads have stopped.
      * @return the largest number
      */
-    public String getLargestNumber() {
+    public long getLargestNumber() {
         lock.lock();
         try {
             return largestNumber;
         } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * See if the program is finished, doesn't really have to use any kind of thread safety measures as it doesn't
+     * really matter if the variable isn't updated for all threads instantly.
+     *
+     * @return if the program is finished
+     */
+    public boolean isFinished() {
+        return finish;
+    }
+
+    /**
+     * Set whether to tell the threads to finish up or not
+     *
+     * @param finish the variable to say if the program is finished
+     * @throws BufferError if the main thread is interrupted
+     */
+    public void setFinished(boolean finish) throws BufferError {
+        lock.lock();
+        try {
+            if (bufferInUse) bufferUsage.await();
+            bufferInUse = true;
+            this.finish = finish;
+        } catch (InterruptedException e) {
+            throw new BufferError(e.getMessage());
+        } finally {
+            bufferInUse = false;
+            bufferUsage.signal();
             lock.unlock();
         }
     }
