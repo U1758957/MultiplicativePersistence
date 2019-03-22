@@ -9,6 +9,7 @@ import errors.BufferError;
 public class Persistence implements Runnable {
 
     private static Buffer buffer = new Buffer();
+    private static final int processedBufferSize = 262144;
 
     public Thread t;
     private long initialNumber;
@@ -16,6 +17,12 @@ public class Persistence implements Runnable {
 
     private int steps = 0;
     private long number;
+
+    private long processed = 0;
+
+    private int[] processBufferStep = new int[processedBufferSize];
+    private long[] processBufferNumber = new long[processedBufferSize];
+    private int processBufferIndex = 0;
 
     /**
      * A constructor for Persistence, also declares the thread to be this class
@@ -41,7 +48,23 @@ public class Persistence implements Runnable {
     private void findNextNumber(long x) throws BufferError {
         long newNumber = 1;
         if ((Math.floor(Math.log10(x)) + 1) == 1) {
-            if (buffer.getLargestSteps() < steps - 1) buffer.setNewLargest(steps - 1, number);
+            processBufferStep[processBufferIndex] = steps - 1;
+            processBufferNumber[processBufferIndex] = number;
+            processBufferIndex++;
+            if (processBufferIndex == processedBufferSize - 1) {
+                processBufferIndex = 0;
+                int largestStep = buffer.getLargestSteps();
+                int currentLargest = 0;
+                int numberIndex = 0;
+                for (int stepIndex = 0; stepIndex < processedBufferSize; stepIndex++) {
+                    if ((processBufferStep[stepIndex] > largestStep) &&
+                            (processBufferStep[stepIndex] > currentLargest)) {
+                        currentLargest = processBufferStep[stepIndex];
+                        numberIndex = stepIndex;
+                    }
+                }
+                if (currentLargest > 0) buffer.setNewLargest(currentLargest, processBufferNumber[numberIndex]);
+            }
         } else {
             while (x > 0) {
                 newNumber *= (x % 10);
@@ -50,6 +73,10 @@ public class Persistence implements Runnable {
             steps++;
             findNextNumber(newNumber);
         }
+    }
+
+    public long getProcessed() {
+        return processed;
     }
 
     @Override
@@ -61,6 +88,7 @@ public class Persistence implements Runnable {
                 number = x;
                 findNextNumber(x);
                 x += offset;
+                processed++;
             } catch (BufferError bufferError) {
                 bufferError.printStackTrace();
             }

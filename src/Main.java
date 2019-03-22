@@ -13,6 +13,8 @@ public class Main {
         //threadCount = 1;
         int timeToRun;
 
+        long totalProcessed = 0;
+
         if (args.length > 0) timeToRun = Integer.valueOf(args[0]);
         else timeToRun = 60;
 
@@ -36,6 +38,10 @@ public class Main {
                 worker.t.join();
             }
 
+            for (Persistence worker : workers) {
+                totalProcessed += worker.getProcessed();
+            }
+
         } catch (InterruptedException e) {
             throw new MainError(e.getMessage());
         }
@@ -44,6 +50,8 @@ public class Main {
 
         System.out.println("In " + timeToRun + " " + plural + ", " + buffer.getLargestNumber() + " was the number " +
                 "with the largest steps, with " + buffer.getLargestSteps() + " steps taken.");
+
+        System.out.println("Total Numbers Processed: " + totalProcessed);
 
     }
 }
