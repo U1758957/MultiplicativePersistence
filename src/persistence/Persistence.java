@@ -3,6 +3,9 @@ package persistence;
 import buffer.Buffer;
 import errors.BufferError;
 
+/**
+ * This class is the checker class
+ */
 public class Persistence implements Runnable {
 
     private static Buffer buffer = new Buffer();
@@ -37,8 +40,8 @@ public class Persistence implements Runnable {
      */
     private void findNextNumber(long x) throws BufferError {
         long newNumber = 1;
-        if ((Math.log10(x) + 1) == 1) {
-            if (buffer.getLargestSteps() < steps) buffer.setNewLargest(steps, number);
+        if ((Math.floor(Math.log10(x)) + 1) == 1) {
+            if (buffer.getLargestSteps() < steps - 1) buffer.setNewLargest(steps - 1, number);
         } else {
             while (x > 0) {
                 newNumber *= (x % 10);
@@ -54,6 +57,7 @@ public class Persistence implements Runnable {
         long x = initialNumber;
         while (!buffer.isFinished()) {
             try {
+                steps = 0;
                 number = x;
                 findNextNumber(x);
                 x += offset;
