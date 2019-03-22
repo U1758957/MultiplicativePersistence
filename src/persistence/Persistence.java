@@ -68,7 +68,7 @@ public class Persistence implements Runnable {
         } else {
             while (x > 0) {
                 newNumber *= (x % 10);
-                if (newNumber == 0 && steps == 0) return;
+                if (steps == 0 && newNumber == 0) return;
                 x /= 10;
             }
             steps++;
