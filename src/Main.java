@@ -10,7 +10,6 @@ public class Main {
     public static void main(String[] args) throws MainError, BufferError {
 
         int threadCount = Runtime.getRuntime().availableProcessors();
-        //threadCount = 1;
         int timeToRun;
 
         long totalProcessed = 0;

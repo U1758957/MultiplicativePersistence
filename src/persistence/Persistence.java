@@ -51,7 +51,7 @@ public class Persistence implements Runnable {
             processBufferStep[processBufferIndex] = steps - 1;
             processBufferNumber[processBufferIndex] = number;
             processBufferIndex++;
-            if (processBufferIndex == processedBufferSize - 1) {
+            if (processBufferIndex == processedBufferSize) {
                 processBufferIndex = 0;
                 int largestStep = buffer.getLargestSteps();
                 int currentLargest = 0;
@@ -68,6 +68,7 @@ public class Persistence implements Runnable {
         } else {
             while (x > 0) {
                 newNumber *= (x % 10);
+                if (newNumber == 0 && steps == 0) return;
                 x /= 10;
             }
             steps++;
