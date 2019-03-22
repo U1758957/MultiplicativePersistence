@@ -7,22 +7,42 @@ public class Main {
 
     private static Buffer buffer = new Buffer();
 
+    /**
+     * The main method
+     *
+     * @param args args[0] is the time to run in seconds, args[1] is the number to start from
+     * @throws MainError   if Main is interrupted
+     * @throws BufferError if a thread using Buffer is interrupted
+     */
     public static void main(String[] args) throws MainError, BufferError {
 
         int threadCount = Runtime.getRuntime().availableProcessors();
         int timeToRun;
+        long startNumber;
 
         long totalProcessed = 0;
 
-        if (args.length > 0) timeToRun = Integer.valueOf(args[0]);
-        else timeToRun = 60;
+        switch (args.length) {
+            case 1:
+                timeToRun = Integer.valueOf(args[0]);
+                startNumber = 0;
+                break;
+            case 2:
+                timeToRun = Integer.valueOf(args[0]);
+                startNumber = Integer.valueOf(args[1]);
+                break;
+            default:
+                timeToRun = 60;
+                startNumber = 0;
+                break;
+        }
 
         try {
 
             Persistence[] workers = new Persistence[threadCount];
 
             for (int x = 0; x < threadCount; x++) {
-                workers[x] = new Persistence(x, threadCount);
+                workers[x] = new Persistence(x + startNumber, threadCount);
             }
 
             for (Persistence worker : workers) {
@@ -50,7 +70,7 @@ public class Main {
         System.out.println("In " + timeToRun + " " + plural + ", " + buffer.getLargestNumber() + " was the number " +
                 "with the largest steps, with " + buffer.getLargestSteps() + " steps taken.");
 
-        System.out.println("Total Numbers Processed: " + totalProcessed);
+        System.out.println("Total Numbers Processed: " + totalProcessed + ", started from " + startNumber);
 
     }
 }
