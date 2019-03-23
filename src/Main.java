@@ -25,15 +25,15 @@ public class Main {
         switch (args.length) {
             case 1:
                 timeToRun = Integer.valueOf(args[0]);
-                startNumber = 0;
+                startNumber = 0L;
                 break;
             case 2:
                 timeToRun = Integer.valueOf(args[0]);
-                startNumber = Integer.valueOf(args[1]);
+                startNumber = Long.valueOf(args[1]);
                 break;
             default:
                 timeToRun = 60;
-                startNumber = 0;
+                startNumber = 0L;
                 break;
         }
 
